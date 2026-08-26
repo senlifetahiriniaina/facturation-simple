@@ -13,7 +13,15 @@ from flask import (
 )
 
 from app import db
-from app.models import CURRENCIES, INVOICE_TYPES, Client, Invoice, InvoiceLine, get_settings
+from app.models import (
+    CURRENCIES,
+    INVOICE_TYPES,
+    Client,
+    Invoice,
+    InvoiceLine,
+    Product,
+    get_settings,
+)
 from app.pdf import render_invoice_pdf
 
 invoices_bp = Blueprint("invoices", __name__, url_prefix="/invoices")
@@ -35,6 +43,13 @@ def _prefix_for_type(settings, type_facture):
 def _parse_type(form):
     type_facture = form.get("type_facture", "facture")
     return type_facture if type_facture in INVOICE_TYPES else "facture"
+
+
+def _products_json():
+    return {
+        p.id: {"nom": p.nom, "prix_unitaire": str(p.prix_unitaire), "devise": p.devise}
+        for p in Product.query.order_by(Product.nom).all()
+    }
 
 
 def _parse_lines(form):
@@ -75,6 +90,8 @@ def list_invoices():
 @invoices_bp.route("/new", methods=["GET", "POST"])
 def new_invoice():
     clients = Client.query.order_by(Client.nom).all()
+    products = Product.query.order_by(Product.nom).all()
+    products_json = _products_json()
     settings = get_settings()
 
     if request.method == "POST":
@@ -86,6 +103,8 @@ def new_invoice():
                 "invoices/form.html",
                 invoice=None,
                 clients=clients,
+                products=products,
+                products_json=products_json,
                 currencies=CURRENCIES,
                 invoice_types=INVOICE_TYPES,
                 today=date.today().isoformat(),
@@ -101,6 +120,8 @@ def new_invoice():
                 "invoices/form.html",
                 invoice=None,
                 clients=clients,
+                products=products,
+                products_json=products_json,
                 currencies=CURRENCIES,
                 invoice_types=INVOICE_TYPES,
                 today=date.today().isoformat(),
@@ -135,6 +156,8 @@ def new_invoice():
         "invoices/form.html",
         invoice=None,
         clients=clients,
+        products=products,
+        products_json=products_json,
         currencies=CURRENCIES,
         invoice_types=INVOICE_TYPES,
         suggested_numeros=suggested_numeros,
@@ -153,6 +176,8 @@ def view_invoice(invoice_id):
 def edit_invoice(invoice_id):
     invoice = Invoice.query.get_or_404(invoice_id)
     clients = Client.query.order_by(Client.nom).all()
+    products = Product.query.order_by(Product.nom).all()
+    products_json = _products_json()
 
     if request.method == "POST":
         type_facture = _parse_type(request.form)
@@ -163,6 +188,8 @@ def edit_invoice(invoice_id):
                 "invoices/form.html",
                 invoice=invoice,
                 clients=clients,
+                products=products,
+                products_json=products_json,
                 currencies=CURRENCIES,
                 invoice_types=INVOICE_TYPES,
             )
@@ -177,6 +204,8 @@ def edit_invoice(invoice_id):
                 "invoices/form.html",
                 invoice=invoice,
                 clients=clients,
+                products=products,
+                products_json=products_json,
                 currencies=CURRENCIES,
                 invoice_types=INVOICE_TYPES,
             )
@@ -202,6 +231,8 @@ def edit_invoice(invoice_id):
         "invoices/form.html",
         invoice=invoice,
         clients=clients,
+        products=products,
+        products_json=products_json,
         currencies=CURRENCIES,
         invoice_types=INVOICE_TYPES,
         suggested_numeros=suggested_numeros,

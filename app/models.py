@@ -39,6 +39,16 @@ class Settings(db.Model):
     signature_filename = db.Column(db.String(200))
 
 
+class Product(db.Model):
+    __tablename__ = "products"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nom = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(300), default="")
+    devise = db.Column(db.String(3), nullable=False, default="MGA")
+    prix_unitaire = db.Column(db.Numeric(16, 2), nullable=False, default=0)
+
+
 def get_settings():
     settings = Settings.query.first()
     if settings is None:

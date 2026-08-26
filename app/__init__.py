@@ -24,10 +24,12 @@ def create_app():
 
     from app.routes.clients import clients_bp
     from app.routes.invoices import invoices_bp
+    from app.routes.products import products_bp
     from app.routes.settings import settings_bp
 
     app.register_blueprint(clients_bp)
     app.register_blueprint(invoices_bp)
+    app.register_blueprint(products_bp)
     app.register_blueprint(settings_bp)
 
     with app.app_context():

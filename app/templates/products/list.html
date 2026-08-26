@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Produits{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1>Produits / Services</h1>
+    <a class="btn" href="{{ url_for('products.new_product') }}">+ Nouveau produit</a>
+  </div>
+
+  {% if products %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Description</th>
+        <th>Prix unitaire</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>{{ product.nom }}</td>
+        <td>{{ product.description or "" }}</td>
+        <td>{{ "{:,.2f}".format(product.prix_unitaire).replace(",", " ") }} {{ product.devise }}</td>
+        <td class="actions">
+          <a href="{{ url_for('products.edit_product', product_id=product.id) }}">Modifier</a>
+          <form method="post" action="{{ url_for('products.delete_product', product_id=product.id) }}"
+                onsubmit="return confirm('Supprimer ce produit ?');">
+            <button type="submit" class="link-danger">Supprimer</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">Aucun produit pour le moment.</p>
+  {% endif %}
+{% endblock %}

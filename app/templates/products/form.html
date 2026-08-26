@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier produit" if product else "Nouveau produit" }}{% endblock %}
+{% block content %}
+  <h1>{{ "Modifier le produit" if product else "Nouveau produit" }}</h1>
+
+  <form method="post" class="form">
+    <label>Nom *
+      <input type="text" name="nom" required value="{{ product.nom if product else '' }}">
+    </label>
+    <label>Description
+      <input type="text" name="description" value="{{ product.description if product else '' }}">
+    </label>
+    <label>Devise *
+      <select name="devise" required>
+        {% for cur in currencies %}
+        <option value="{{ cur }}" {% if (product.devise if product else "MGA") == cur %}selected{% endif %}>{{ cur }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Prix unitaire *
+      <input type="number" step="0.01" min="0" name="prix_unitaire" required
+             value="{{ product.prix_unitaire if product else '0' }}">
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">Enregistrer</button>
+      <a class="btn btn-secondary" href="{{ url_for('products.list_products') }}">Annuler</a>
+    </div>
+  </form>
+{% endblock %}
