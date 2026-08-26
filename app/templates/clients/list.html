@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Clients{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1>Clients</h1>
+    <a class="btn" href="{{ url_for('clients.new_client') }}">+ Nouveau client</a>
+  </div>
+
+  {% if clients %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Téléphone</th>
+        <th>Email</th>
+        <th>NIF</th>
+        <th>STAT</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for client in clients %}
+      <tr>
+        <td>{{ client.nom }}</td>
+        <td>{{ client.telephone or "" }}</td>
+        <td>{{ client.email or "" }}</td>
+        <td>{{ client.nif or "" }}</td>
+        <td>{{ client.stat or "" }}</td>
+        <td class="actions">
+          <a href="{{ url_for('clients.edit_client', client_id=client.id) }}">Modifier</a>
+          <form method="post" action="{{ url_for('clients.delete_client', client_id=client.id) }}"
+                onsubmit="return confirm('Supprimer ce client ?');">
+            <button type="submit" class="link-danger">Supprimer</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">Aucun client pour le moment.</p>
+  {% endif %}
+{% endblock %}

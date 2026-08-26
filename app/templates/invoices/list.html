@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Factures{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1>Factures</h1>
+    <a class="btn" href="{{ url_for('invoices.new_invoice') }}">+ Nouvelle facture</a>
+  </div>
+
+  {% if invoices %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Numéro</th>
+        <th>Date</th>
+        <th>Client</th>
+        <th>Total (MGA)</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td>{{ invoice.numero }}</td>
+        <td>{{ invoice.date_facture.strftime("%d/%m/%Y") }}</td>
+        <td>{{ invoice.client.nom }}</td>
+        <td>{{ "{:,.2f}".format(invoice.total_mga).replace(",", " ") }}</td>
+        <td class="actions">
+          <a href="{{ url_for('invoices.view_invoice', invoice_id=invoice.id) }}">Voir</a>
+          <a href="{{ url_for('invoices.edit_invoice', invoice_id=invoice.id) }}">Modifier</a>
+          <a href="{{ url_for('invoices.invoice_pdf', invoice_id=invoice.id) }}">PDF</a>
+          <form method="post" action="{{ url_for('invoices.delete_invoice', invoice_id=invoice.id) }}"
+                onsubmit="return confirm('Supprimer cette facture ?');">
+            <button type="submit" class="link-danger">Supprimer</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">Aucune facture pour le moment.</p>
+  {% endif %}
+{% endblock %}

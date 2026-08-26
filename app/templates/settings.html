@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Paramètres{% endblock %}
+{% block content %}
+  <h1>Paramètres</h1>
+
+  <form method="post" enctype="multipart/form-data" class="form">
+    <h2>Société</h2>
+    <label>Nom de la société
+      <input type="text" name="nom_societe" value="{{ settings.nom_societe or '' }}">
+    </label>
+    <label>Adresse
+      <input type="text" name="adresse" value="{{ settings.adresse or '' }}">
+    </label>
+    <label>Téléphone
+      <input type="text" name="telephone" value="{{ settings.telephone or '' }}">
+    </label>
+    <label>Email
+      <input type="email" name="email" value="{{ settings.email or '' }}">
+    </label>
+    <label>NIF
+      <input type="text" name="nif" value="{{ settings.nif or '' }}">
+    </label>
+    <label>STAT
+      <input type="text" name="stat" value="{{ settings.stat or '' }}">
+    </label>
+
+    <h2>Numérotation des factures</h2>
+    <label>Préfixe
+      <input type="text" name="prefixe_facture" value="{{ settings.prefixe_facture }}">
+    </label>
+    <p class="hint">Format généré : {{ settings.prefixe_facture }}/AAAA-0001 (le compteur redémarre chaque année).</p>
+
+    <h2>Signature</h2>
+    {% if settings.signature_filename %}
+      <p class="hint">Signature actuellement enregistrée :</p>
+      <img class="signature-preview" src="{{ url_for('settings.signature_image') }}" alt="Signature actuelle">
+    {% endif %}
+    <label>Image de signature (PNG transparent)
+      <input type="file" name="signature" accept="image/png">
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">Enregistrer</button>
+    </div>
+  </form>
+
+  <div class="backup-box">
+    <h2>Sauvegarde</h2>
+    <p>Téléchargez une copie de la base de données SQLite à conserver en lieu sûr.</p>
+    <a class="btn btn-secondary" href="{{ url_for('settings.backup_db') }}">Télécharger la sauvegarde</a>
+  </div>
+{% endblock %}

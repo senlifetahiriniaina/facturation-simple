@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 11pt; color: #1a1a1a; }
+  h1 { font-size: 20pt; margin: 0 0 4px; }
+  .header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+  .company { max-width: 55%; }
+  .company p { margin: 2px 0; }
+  .invoice-info { text-align: right; }
+  .invoice-info p { margin: 2px 0; }
+  .client-box { margin-bottom: 24px; padding: 10px 14px; border: 1px solid #ccc; border-radius: 4px; max-width: 60%; }
+  .client-box h3 { margin: 0 0 6px; font-size: 11pt; text-transform: uppercase; color: #555; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 8px 6px; text-align: left; font-size: 10pt; }
+  th { background: #f2f2f2; text-transform: uppercase; font-size: 9pt; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  tfoot td { border-top: 2px solid #333; border-bottom: none; font-weight: bold; font-size: 12pt; }
+  .notes { margin-top: 24px; font-size: 10pt; color: #444; }
+  .signature { margin-top: 48px; text-align: right; }
+  .signature img { max-height: 90px; }
+  .signature .label { font-size: 9pt; color: #666; margin-top: 4px; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="company">
+      <h1>{{ settings.nom_societe or "Ma société" }}</h1>
+      {% if settings.adresse %}<p>{{ settings.adresse }}</p>{% endif %}
+      {% if settings.telephone %}<p>Tél : {{ settings.telephone }}</p>{% endif %}
+      {% if settings.email %}<p>Email : {{ settings.email }}</p>{% endif %}
+      {% if settings.nif %}<p>NIF : {{ settings.nif }}</p>{% endif %}
+      {% if settings.stat %}<p>STAT : {{ settings.stat }}</p>{% endif %}
+    </div>
+    <div class="invoice-info">
+      <p><strong>Facture N°</strong> {{ invoice.numero }}</p>
+      <p><strong>Date :</strong> {{ invoice.date_facture.strftime("%d/%m/%Y") }}</p>
+    </div>
+  </div>
+
+  <div class="client-box">
+    <h3>Facturé à</h3>
+    <p><strong>{{ invoice.client.nom }}</strong></p>
+    {% if invoice.client.adresse %}<p>{{ invoice.client.adresse }}</p>{% endif %}
+    {% if invoice.client.telephone %}<p>Tél : {{ invoice.client.telephone }}</p>{% endif %}
+    {% if invoice.client.email %}<p>{{ invoice.client.email }}</p>{% endif %}
+    {% if invoice.client.nif %}<p>NIF : {{ invoice.client.nif }}</p>{% endif %}
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th class="num">Quantité</th>
+        <th class="num">Prix unitaire</th>
+        <th class="num">Taux de change</th>
+        <th class="num">Total (MGA)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td>{{ line.description }}</td>
+        <td class="num">{{ line.quantite }}</td>
+        <td class="num">{{ "{:,.2f}".format(line.prix_unitaire).replace(",", " ") }} {{ line.devise }}</td>
+        <td class="num">{% if line.devise != "MGA" %}1 {{ line.devise }} = {{ line.taux_change }} MGA{% else %}-{% endif %}</td>
+        <td class="num">{{ "{:,.2f}".format(line.total_mga).replace(",", " ") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4">Total</td>
+        <td class="num">{{ "{:,.2f}".format(invoice.total_mga).replace(",", " ") }} MGA</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  {% if invoice.notes %}
+  <div class="notes">
+    <strong>Notes :</strong>
+    <p>{{ invoice.notes }}</p>
+  </div>
+  {% endif %}
+
+  {% if signature_path %}
+  <div class="signature">
+    <img src="file://{{ signature_path }}" alt="Signature">
+    <div class="label">Signature</div>
+  </div>
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Facture {{ invoice.numero }}{% endblock %}
+{% block content %}
+  <div class="page-header">
+    <h1>Facture {{ invoice.numero }}</h1>
+    <div class="actions">
+      <a class="btn" href="{{ url_for('invoices.invoice_pdf', invoice_id=invoice.id) }}">Télécharger PDF</a>
+      <a class="btn btn-secondary" href="{{ url_for('invoices.edit_invoice', invoice_id=invoice.id) }}">Modifier</a>
+    </div>
+  </div>
+
+  <div class="invoice-meta">
+    <p><strong>Date :</strong> {{ invoice.date_facture.strftime("%d/%m/%Y") }}</p>
+    <p><strong>Client :</strong> {{ invoice.client.nom }}</p>
+    {% if invoice.client.adresse %}<p>{{ invoice.client.adresse }}</p>{% endif %}
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Quantité</th>
+        <th>Prix unitaire</th>
+        <th>Taux</th>
+        <th>Total (MGA)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in invoice.lines %}
+      <tr>
+        <td>{{ line.description }}</td>
+        <td>{{ line.quantite }}</td>
+        <td>{{ "{:,.2f}".format(line.prix_unitaire).replace(",", " ") }} {{ line.devise }}</td>
+        <td>{{ line.taux_change if line.devise != "MGA" else "-" }}</td>
+        <td>{{ "{:,.2f}".format(line.total_mga).replace(",", " ") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="4">Total</th>
+        <th>{{ "{:,.2f}".format(invoice.total_mga).replace(",", " ") }} MGA</th>
+      </tr>
+    </tfoot>
+  </table>
+
+  {% if invoice.notes %}
+  <div class="invoice-notes">
+    <h2>Notes</h2>
+    <p>{{ invoice.notes }}</p>
+  </div>
+  {% endif %}
+{% endblock %}

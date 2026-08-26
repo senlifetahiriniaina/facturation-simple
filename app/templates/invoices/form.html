@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}{{ "Modifier facture" if invoice else "Nouvelle facture" }}{% endblock %}
+{% block content %}
+  <h1>{{ "Modifier la facture" if invoice else "Nouvelle facture" }}</h1>
+
+  <form method="post" class="form">
+    <div class="form-row">
+      <label>Numéro
+        <input type="text" name="numero"
+               value="{{ invoice.numero if invoice else suggested_numero }}"
+               placeholder="généré automatiquement si laissé tel quel">
+      </label>
+      <label>Date de la facture *
+        <input type="date" name="date_facture" required
+               value="{{ invoice.date_facture.isoformat() if invoice else today }}">
+      </label>
+      <label>Client *
+        <select name="client_id" required>
+          <option value="">-- Sélectionner --</option>
+          {% for c in clients %}
+          <option value="{{ c.id }}" {% if invoice and invoice.client_id == c.id %}selected{% endif %}>{{ c.nom }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+
+    <h2>Lignes</h2>
+    <table class="table" id="lines-table">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Quantité</th>
+          <th>Devise</th>
+          <th>Prix unitaire</th>
+          <th>Taux de change &rarr; MGA</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="lines-body">
+        {% if invoice %}
+          {% for line in invoice.lines %}
+          <tr class="line-row">
+            <td><input type="text" name="description[]" required value="{{ line.description }}"></td>
+            <td><input type="number" step="0.01" min="0" name="quantite[]" required value="{{ line.quantite }}"></td>
+            <td>
+              <select name="devise[]" class="devise-select">
+                {% for cur in currencies %}
+                <option value="{{ cur }}" {% if line.devise == cur %}selected{% endif %}>{{ cur }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td><input type="number" step="0.01" min="0" name="prix_unitaire[]" required value="{{ line.prix_unitaire }}"></td>
+            <td><input type="number" step="0.0001" min="0" name="taux_change[]" class="taux-input"
+                       value="{{ line.taux_change if line.taux_change is not none else '' }}"
+                       {% if line.devise == 'MGA' %}disabled{% endif %}></td>
+            <td><button type="button" class="link-danger remove-line">Supprimer</button></td>
+          </tr>
+          {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+    <button type="button" id="add-line" class="btn btn-secondary">+ Ajouter une ligne</button>
+
+    <label class="notes-field">Notes
+      <textarea name="notes" rows="3">{{ invoice.notes if invoice else "" }}</textarea>
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn">Enregistrer</button>
+      <a class="btn btn-secondary" href="{{ url_for('invoices.list_invoices') }}">Annuler</a>
+    </div>
+  </form>
+
+  <template id="line-row-template">
+    <tr class="line-row">
+      <td><input type="text" name="description[]" required></td>
+      <td><input type="number" step="0.01" min="0" name="quantite[]" required value="1"></td>
+      <td>
+        <select name="devise[]" class="devise-select">
+          {% for cur in currencies %}
+          <option value="{{ cur }}">{{ cur }}</option>
+          {% endfor %}
+        </select>
+      </td>
+      <td><input type="number" step="0.01" min="0" name="prix_unitaire[]" required value="0"></td>
+      <td><input type="number" step="0.0001" min="0" name="taux_change[]" class="taux-input" disabled></td>
+      <td><button type="button" class="link-danger remove-line">Supprimer</button></td>
+    </tr>
+  </template>
+
+  <script>
+    const linesBody = document.getElementById("lines-body");
+    const template = document.getElementById("line-row-template");
+
+    function wireRow(row) {
+      const deviseSelect = row.querySelector(".devise-select");
+      const tauxInput = row.querySelector(".taux-input");
+
+      function syncTaux() {
+        if (deviseSelect.value === "MGA") {
+          tauxInput.disabled = true;
+          tauxInput.value = "";
+        } else {
+          tauxInput.disabled = false;
+        }
+      }
+      deviseSelect.addEventListener("change", syncTaux);
+      syncTaux();
+
+      row.querySelector(".remove-line").addEventListener("click", () => row.remove());
+    }
+
+    document.querySelectorAll(".line-row").forEach(wireRow);
+
+    document.getElementById("add-line").addEventListener("click", () => {
+      const clone = template.content.cloneNode(true);
+      linesBody.appendChild(clone);
+      wireRow(linesBody.lastElementChild);
+    });
+
+    if (linesBody.children.length === 0) {
+      document.getElementById("add-line").click();
+    }
+  </script>
+{% endblock %}
