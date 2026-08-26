@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Facturation{% endblock %}</title>
+  <title>{% block title %}{{ settings.nom_societe or "Facturation" }}{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="{{ url_for('invoices.list_invoices') }}">Facturation</a>
+    <a class="brand" href="{{ url_for('invoices.list_invoices') }}">{{ settings.nom_societe or "Facturation" }}</a>
     <nav>
       <a href="{{ url_for('invoices.list_invoices') }}">Factures</a>
       <a href="{{ url_for('clients.list_clients') }}">Clients</a>

@@ -34,7 +34,11 @@ def edit_settings():
         settings.email = request.form.get("email", "").strip()
         settings.nif = request.form.get("nif", "").strip()
         settings.stat = request.form.get("stat", "").strip()
+        settings.identifiant = request.form.get("identifiant", "").strip()
         settings.prefixe_facture = request.form.get("prefixe_facture", "FACT").strip() or "FACT"
+        settings.prefixe_proforma = (
+            request.form.get("prefixe_proforma", "PROFORMA").strip() or "PROFORMA"
+        )
 
         signature = request.files.get("signature")
         if signature and signature.filename:

@@ -11,6 +11,7 @@
     <thead>
       <tr>
         <th>Numéro</th>
+        <th>Type</th>
         <th>Date</th>
         <th>Client</th>
         <th>Total (MGA)</th>
@@ -21,6 +22,11 @@
       {% for invoice in invoices %}
       <tr>
         <td>{{ invoice.numero }}</td>
+        <td>
+          <span class="badge {{ 'badge-proforma' if invoice.type_facture == 'proforma' else 'badge-facture' }}">
+            {{ "Proforma" if invoice.type_facture == "proforma" else "Facture" }}
+          </span>
+        </td>
         <td>{{ invoice.date_facture.strftime("%d/%m/%Y") }}</td>
         <td>{{ invoice.client.nom }}</td>
         <td>{{ "{:,.2f}".format(invoice.total_mga).replace(",", " ") }}</td>

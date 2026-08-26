@@ -13,7 +13,7 @@ from flask import (
 )
 
 from app import db
-from app.models import CURRENCIES, Client, Invoice, InvoiceLine, get_settings
+from app.models import CURRENCIES, INVOICE_TYPES, Client, Invoice, InvoiceLine, get_settings
 from app.pdf import render_invoice_pdf
 
 invoices_bp = Blueprint("invoices", __name__, url_prefix="/invoices")
@@ -24,6 +24,17 @@ def _to_decimal(value, default="0"):
         return Decimal(value)
     except (InvalidOperation, TypeError):
         return Decimal(default)
+
+
+def _prefix_for_type(settings, type_facture):
+    if type_facture == "proforma":
+        return settings.prefixe_proforma or "PROFORMA"
+    return settings.prefixe_facture or "FACT"
+
+
+def _parse_type(form):
+    type_facture = form.get("type_facture", "facture")
+    return type_facture if type_facture in INVOICE_TYPES else "facture"
 
 
 def _parse_lines(form):
@@ -67,6 +78,7 @@ def new_invoice():
     settings = get_settings()
 
     if request.method == "POST":
+        type_facture = _parse_type(request.form)
         client_id = request.form.get("client_id", type=int)
         if not client_id:
             flash("Veuillez sélectionner un client.", "error")
@@ -75,6 +87,7 @@ def new_invoice():
                 invoice=None,
                 clients=clients,
                 currencies=CURRENCIES,
+                invoice_types=INVOICE_TYPES,
                 today=date.today().isoformat(),
             )
 
@@ -89,15 +102,17 @@ def new_invoice():
                 invoice=None,
                 clients=clients,
                 currencies=CURRENCIES,
+                invoice_types=INVOICE_TYPES,
                 today=date.today().isoformat(),
             )
 
         numero = request.form.get("numero", "").strip()
         if not numero:
-            numero = Invoice.next_numero(settings.prefixe_facture, date_facture.year)
+            numero = Invoice.next_numero(_prefix_for_type(settings, type_facture), date_facture.year)
 
         invoice = Invoice(
             numero=numero,
+            type_facture=type_facture,
             date_facture=date_facture,
             client_id=client_id,
             notes=request.form.get("notes", "").strip(),
@@ -105,16 +120,24 @@ def new_invoice():
         )
         db.session.add(invoice)
         db.session.commit()
-        flash("Facture créée.", "success")
+        flash(
+            "Proforma créé." if type_facture == "proforma" else "Facture créée.",
+            "success",
+        )
         return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
 
-    suggested_numero = Invoice.next_numero(settings.prefixe_facture, date.today().year)
+    year = date.today().year
+    suggested_numeros = {
+        "facture": Invoice.next_numero(settings.prefixe_facture, year),
+        "proforma": Invoice.next_numero(settings.prefixe_proforma, year),
+    }
     return render_template(
         "invoices/form.html",
         invoice=None,
         clients=clients,
         currencies=CURRENCIES,
-        suggested_numero=suggested_numero,
+        invoice_types=INVOICE_TYPES,
+        suggested_numeros=suggested_numeros,
         today=date.today().isoformat(),
     )
 
@@ -132,11 +155,16 @@ def edit_invoice(invoice_id):
     clients = Client.query.order_by(Client.nom).all()
 
     if request.method == "POST":
+        type_facture = _parse_type(request.form)
         client_id = request.form.get("client_id", type=int)
         if not client_id:
             flash("Veuillez sélectionner un client.", "error")
             return render_template(
-                "invoices/form.html", invoice=invoice, clients=clients, currencies=CURRENCIES
+                "invoices/form.html",
+                invoice=invoice,
+                clients=clients,
+                currencies=CURRENCIES,
+                invoice_types=INVOICE_TYPES,
             )
 
         date_str = request.form.get("date_facture") or date.today().isoformat()
@@ -146,12 +174,17 @@ def edit_invoice(invoice_id):
         if not lines:
             flash("Ajoutez au moins une ligne à la facture.", "error")
             return render_template(
-                "invoices/form.html", invoice=invoice, clients=clients, currencies=CURRENCIES
+                "invoices/form.html",
+                invoice=invoice,
+                clients=clients,
+                currencies=CURRENCIES,
+                invoice_types=INVOICE_TYPES,
             )
 
         numero = request.form.get("numero", "").strip()
         if numero:
             invoice.numero = numero
+        invoice.type_facture = type_facture
         invoice.client_id = client_id
         invoice.notes = request.form.get("notes", "").strip()
         invoice.lines = lines
@@ -159,8 +192,19 @@ def edit_invoice(invoice_id):
         flash("Facture mise à jour.", "success")
         return redirect(url_for("invoices.view_invoice", invoice_id=invoice.id))
 
+    settings = get_settings()
+    year = date.today().year
+    suggested_numeros = {
+        "facture": Invoice.next_numero(settings.prefixe_facture, year),
+        "proforma": Invoice.next_numero(settings.prefixe_proforma, year),
+    }
     return render_template(
-        "invoices/form.html", invoice=invoice, clients=clients, currencies=CURRENCIES
+        "invoices/form.html",
+        invoice=invoice,
+        clients=clients,
+        currencies=CURRENCIES,
+        invoice_types=INVOICE_TYPES,
+        suggested_numeros=suggested_numeros,
     )
 
 

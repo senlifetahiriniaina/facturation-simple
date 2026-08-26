@@ -9,6 +9,8 @@
   .header { display: flex; justify-content: space-between; margin-bottom: 24px; }
   .company { max-width: 55%; }
   .company p { margin: 2px 0; }
+  .company .company-id { font-weight: 600; margin-bottom: 6px; }
+  .proforma-banner { display: inline-block; margin: 4px 0 0; padding: 3px 10px; background: #fef3c7; color: #92400e; border-radius: 4px; font-size: 10pt; font-weight: 700; letter-spacing: 0.05em; }
   .invoice-info { text-align: right; }
   .invoice-info p { margin: 2px 0; }
   .client-box { margin-bottom: 24px; padding: 10px 14px; border: 1px solid #ccc; border-radius: 4px; max-width: 60%; }
@@ -28,6 +30,7 @@
   <div class="header">
     <div class="company">
       <h1>{{ settings.nom_societe or "Ma société" }}</h1>
+      {% if settings.identifiant %}<p class="company-id">Identifiant : {{ settings.identifiant }}</p>{% endif %}
       {% if settings.adresse %}<p>{{ settings.adresse }}</p>{% endif %}
       {% if settings.telephone %}<p>Tél : {{ settings.telephone }}</p>{% endif %}
       {% if settings.email %}<p>Email : {{ settings.email }}</p>{% endif %}
@@ -35,7 +38,8 @@
       {% if settings.stat %}<p>STAT : {{ settings.stat }}</p>{% endif %}
     </div>
     <div class="invoice-info">
-      <p><strong>Facture N°</strong> {{ invoice.numero }}</p>
+      {% if invoice.type_facture == "proforma" %}<p><span class="proforma-banner">PROFORMA</span></p>{% endif %}
+      <p><strong>{{ "Proforma N°" if invoice.type_facture == "proforma" else "Facture N°" }}</strong> {{ invoice.numero }}</p>
       <p><strong>Date :</strong> {{ invoice.date_facture.strftime("%d/%m/%Y") }}</p>
     </div>
   </div>

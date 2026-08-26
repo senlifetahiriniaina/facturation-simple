@@ -23,12 +23,20 @@
     <label>STAT
       <input type="text" name="stat" value="{{ settings.stat or '' }}">
     </label>
+    <label>Identifiant / RCS
+      <input type="text" name="identifiant" value="{{ settings.identifiant or '' }}">
+    </label>
 
     <h2>Numérotation des factures</h2>
-    <label>Préfixe
+    <label>Préfixe facture
       <input type="text" name="prefixe_facture" value="{{ settings.prefixe_facture }}">
     </label>
     <p class="hint">Format généré : {{ settings.prefixe_facture }}/AAAA-0001 (le compteur redémarre chaque année).</p>
+
+    <label>Préfixe proforma
+      <input type="text" name="prefixe_proforma" value="{{ settings.prefixe_proforma }}">
+    </label>
+    <p class="hint">Format généré : {{ settings.prefixe_proforma }}/AAAA-0001 (compteur indépendant des factures, redémarre chaque année).</p>
 
     <h2>Signature</h2>
     {% if settings.signature_filename %}

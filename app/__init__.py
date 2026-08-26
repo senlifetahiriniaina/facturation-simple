@@ -36,6 +36,12 @@ def create_app():
         db.create_all()
         models.get_settings()
 
+    @app.context_processor
+    def inject_settings():
+        from app.models import get_settings
+
+        return {"settings": get_settings()}
+
     @app.route("/")
     def index():
         from flask import redirect, url_for

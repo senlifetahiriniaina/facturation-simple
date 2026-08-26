@@ -5,9 +5,18 @@
 
   <form method="post" class="form">
     <div class="form-row">
+      <label>Type *
+        <select name="type_facture" id="type-select" required>
+          {% for t in invoice_types %}
+          <option value="{{ t }}" {% if (invoice.type_facture if invoice else "facture") == t %}selected{% endif %}>
+            {{ "Proforma" if t == "proforma" else "Facture" }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
       <label>Numéro
-        <input type="text" name="numero"
-               value="{{ invoice.numero if invoice else suggested_numero }}"
+        <input type="text" name="numero" id="numero-input"
+               value="{{ invoice.numero if invoice else suggested_numeros[invoice_types[0]] }}"
                placeholder="généré automatiquement si laissé tel quel">
       </label>
       <label>Date de la facture *
@@ -89,6 +98,25 @@
   </template>
 
   <script>
+    const suggestedNumeros = {{ (suggested_numeros or {}) | tojson }};
+    const isNewInvoice = {{ "false" if invoice else "true" }};
+    const typeSelect = document.getElementById("type-select");
+    const numeroInput = document.getElementById("numero-input");
+    let numeroTouched = !isNewInvoice;
+
+    if (numeroInput && typeSelect) {
+      numeroInput.addEventListener("input", () => {
+        numeroTouched = true;
+      });
+      typeSelect.addEventListener("change", () => {
+        if (numeroTouched) return;
+        const suggestion = suggestedNumeros[typeSelect.value];
+        if (suggestion) {
+          numeroInput.value = suggestion;
+        }
+      });
+    }
+
     const linesBody = document.getElementById("lines-body");
     const template = document.getElementById("line-row-template");
 

@@ -109,6 +109,16 @@ h2 { font-size: 17px; margin: 24px 0 10px; }
 
 .empty { color: var(--muted); }
 
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-facture { background: #dbeafe; color: #1e40af; }
+.badge-proforma { background: #fef3c7; color: #92400e; }
+
 .form {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -137,7 +147,7 @@ h2 { font-size: 17px; margin: 24px 0 10px; }
 
 .form-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 16px;
 }
 

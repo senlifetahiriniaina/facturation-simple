@@ -4,6 +4,7 @@ from decimal import Decimal
 from app import db
 
 CURRENCIES = ["MGA", "USD", "EUR"]
+INVOICE_TYPES = ["facture", "proforma"]
 
 
 class Client(db.Model):
@@ -32,14 +33,16 @@ class Settings(db.Model):
     email = db.Column(db.String(150), default="")
     nif = db.Column(db.String(50), default="")
     stat = db.Column(db.String(50), default="")
+    identifiant = db.Column(db.String(100), default="")
     prefixe_facture = db.Column(db.String(20), default="FACT")
+    prefixe_proforma = db.Column(db.String(20), default="PROFORMA")
     signature_filename = db.Column(db.String(200))
 
 
 def get_settings():
     settings = Settings.query.first()
     if settings is None:
-        settings = Settings(prefixe_facture="FACT")
+        settings = Settings(prefixe_facture="FACT", prefixe_proforma="PROFORMA")
         db.session.add(settings)
         db.session.commit()
     return settings
@@ -50,6 +53,7 @@ class Invoice(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     numero = db.Column(db.String(50), unique=True, nullable=False)
+    type_facture = db.Column(db.String(10), nullable=False, default="facture")
     date_facture = db.Column(db.Date, nullable=False, default=date.today)
     client_id = db.Column(db.Integer, db.ForeignKey("clients.id"), nullable=False)
     notes = db.Column(db.Text)
