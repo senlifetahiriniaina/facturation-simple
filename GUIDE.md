@@ -77,3 +77,36 @@ Il n'y a volontairement pas de bouton "Restaurer" dans l'application, pour évit
 5. Vérifiez dans **Factures** et **Clients** que les données restaurées sont bien celles attendues.
 
 Si quelque chose ne va pas, vous pouvez toujours revenir à l'état précédent en restaurant `instance/app.db.avant-restauration`.
+
+## 5. Dépannage : erreurs réseau au lancement
+
+Si `./run.sh` échoue à la première utilisation (ou après une mise à jour) avec un message du type :
+
+```
+WARNING: Retrying ... after connection broken by 'ConnectionResetError(104, 'Connexion ré-initialisée par le correspondant')': /simple/flask/
+```
+
+C'est que `pip` n'arrive pas à joindre PyPI (le site qui héberge les paquets Python : `pypi.org`) depuis votre machine — ce n'est pas un problème dans le code de l'application. Causes les plus courantes et pistes, dans l'ordre :
+
+1. **Coupure ponctuelle** : relancez simplement `./run.sh`. Beaucoup de coupures réseau se résolvent d'elles-mêmes.
+2. **Testez votre connexion à PyPI** :
+   ```bash
+   curl -I https://pypi.org/simple/flask/
+   ```
+   Si cette commande échoue aussi, le problème est réseau, pas lié à l'application.
+3. **Proxy ou VPN d'entreprise** : si votre connexion passe par un proxy, configurez-le pour `pip` :
+   ```bash
+   export HTTPS_PROXY="http://votre-proxy:port"
+   export HTTP_PROXY="http://votre-proxy:port"
+   ./run.sh
+   ```
+   Si vous êtes sur un VPN, essayez de le désactiver temporairement pour tester.
+4. **Pare-feu / antivirus local** : certains bloquent les connexions HTTPS sortantes vers des sites inconnus. Vérifiez qu'ils n'interceptent pas `pypi.org` / `files.pythonhosted.org`.
+5. **PyPI bloqué dans votre pays/réseau** : essayez un miroir PyPI alternatif :
+   ```bash
+   pip install --index-url https://pypi.org/simple -r requirements.txt
+   # ou, si un miroir local est disponible sur votre réseau :
+   pip install --index-url https://votre-miroir/simple -r requirements.txt
+   ```
+
+`run.sh` retente désormais automatiquement plusieurs fois avant d'abandonner, et affiche un message clair (plutôt qu'une trace `pip` brute) en cas d'échec réseau persistant.

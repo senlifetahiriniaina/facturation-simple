@@ -9,8 +9,20 @@ if [ ! -d venv ]; then
 fi
 
 source venv/bin/activate
-pip install --quiet --upgrade pip
-pip install --quiet -r requirements.txt
+
+PIP_NET_OPTS="--retries 5 --timeout 30"
+
+if ! pip install --quiet --upgrade pip $PIP_NET_OPTS; then
+  echo "Impossible de contacter PyPI pour mettre à jour pip (problème réseau)." >&2
+  echo "Voir la section Dépannage de GUIDE.md." >&2
+  exit 1
+fi
+
+if ! pip install --quiet -r requirements.txt $PIP_NET_OPTS; then
+  echo "Impossible d'installer les dépendances (problème réseau vers PyPI)." >&2
+  echo "Voir la section Dépannage de GUIDE.md." >&2
+  exit 1
+fi
 
 export FLASK_APP=app:create_app
 export FLASK_RUN_HOST=127.0.0.1
